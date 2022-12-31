@@ -3,6 +3,7 @@ CFLAGS=-Wall -Wextra -O3 --std=c2x -g3
 LDFLAGS=-lcheck
 
 main: main.o patricia/patricia.o patricia/patricia_check.o
+	${CC} -o $@ $^ ${LDFLAGS}
 
 patricia.o: patricia/patricia.h patricia/patricia_internal.h
 
