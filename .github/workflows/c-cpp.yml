@@ -8,11 +8,16 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-11]
+    runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v3
+    - name: Ubuntu Dependancies
+      if: startsWith(matrix.os, 'ubuntu')
+      run: sudo apt-get update && sudp apt-get install -y libtalloc-dev check graphviz
     - name: make
       run: make
     - name: Run tests
