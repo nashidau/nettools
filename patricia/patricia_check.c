@@ -339,7 +339,7 @@ START_TEST(test_bits_prefix_32)
 END_TEST
 START_TEST(test_bits_prefix_0xc0_0x80)
 {
-	ck_assert(!bit_prefix_compare(0xc0000000, 0x80000000, 32, NULL));
+	ck_assert(!bit_prefix_compare(0xc0000000, 0x80000000, BITFIELD_BITS, NULL));
 }
 END_TEST
 
