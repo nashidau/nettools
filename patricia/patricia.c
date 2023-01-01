@@ -102,7 +102,7 @@ bool
 patricia_route_add_ip6(struct patricia *trie, struct in6_addr addr, int prefix, const void *route)
 {
 	trie = 0;
-	addr = (in6_addr_t){0};
+	addr = (struct in6_addr){0};
 	prefix = 0;
 	route = NULL;
 	// Not implemented yet.
