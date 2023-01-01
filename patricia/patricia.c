@@ -5,8 +5,8 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <check.h>
-#include <netinet/in.h>
 #include <inttypes.h>
+#include <netinet/in.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -91,11 +91,11 @@ patricia_route_add(struct patricia *trie, bitfield_t addr, int prefix, const voi
 bool
 patricia_route_add_ip4(struct patricia *trie, in_addr_t addr, int prefix, const void *route)
 {
-	if (PATRICIA_SIZE == 64) {
-		return patricia_route_add(trie, ((bitfield_t)addr) << 32, prefix, route);
-	} else {
-		return patricia_route_add(trie, addr, prefix, route);
-	}
+#if PATRICIA_SIZE == 64
+	return patricia_route_add(trie, ((bitfield_t)addr) << 32, prefix, route);
+#else
+	return patricia_route_add(trie, addr, prefix, route);
+#endif
 }
 
 bool
