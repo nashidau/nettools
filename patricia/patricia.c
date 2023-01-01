@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <check.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,8 +19,6 @@ enum {
 };
 // static const bool TRIE_LEFT = false;
 // static const bool TRIE_RIGHT = true;
-
-#define BITFIELD_ONE 1u
 
 #define N_CHILDREN 2
 
@@ -209,7 +208,7 @@ static void
 node_dump(int depth, struct pnode *node)
 {
 	if (!node) return;
-	printf("%p: %s/%d %x->%s (L%p/R%p) prefix %d\n", node,
+	printf("%p: %s/%d %" PR_BITFIELD "->%s (L%p/R%p) prefix %d\n", node,
 	       inet_ntoa((struct in_addr){.s_addr = htonl(node->prefix)}), depth + node->prefixlen,
 	       node->prefix, (const char *)node->route, node->children[0], node->children[1],
 	       node->prefixlen);

@@ -1,10 +1,27 @@
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <inttypes.h>
 
-// These need to all update together
+// 32 bit or 64bit bitfields
+#ifndef PATRICIA_SIZE
+#define PATRICIA_SIZE 32
+#endif
+
+#if PATRICIA_SIZE == 64
+typedef uint64_t bitfield_t;
+#define BITFIELD_BITS (sizeof(bitfield_t) << 3)
+#define PR_BITFIELD PRIx64
+#define BITFIELD_ONE  UINT64_C(1)
+#elif PATRICIA_SIZE == 32
 typedef uint32_t bitfield_t;
 #define BITFIELD_BITS (sizeof(bitfield_t) << 3)
+#define PR_BITFIELD PRIx32
+#define BITFIELD_ONE UINT32_C(1)
+#else
+#error Bitfield needs to be 32 or 64 bits.
+#endif
+
+
 
 // Node of the patricia trie.
 struct pnode {

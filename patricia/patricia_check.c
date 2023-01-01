@@ -277,8 +277,8 @@ END_TEST
 
 START_TEST(test_bits_get_first)
 {
-	ck_assert_int_eq(1, bit_get(0x80000000, 0));
-	ck_assert_int_eq(0, bit_get(~0x80000000, 0));
+	ck_assert_int_eq(1, bit_get(BITFIELD_ONE << (BITFIELD_BITS - 1), 0));
+	ck_assert_int_eq(0, bit_get(~(BITFIELD_ONE << (BITFIELD_BITS - 1)), 0));
 }
 END_TEST
 START_TEST(test_bits_get_last)
@@ -289,23 +289,29 @@ START_TEST(test_bits_get_last)
 END_TEST
 START_TEST(test_bits_get_seven)
 {
-	ck_assert_int_eq(1, bit_get(0x01000000, 7));
-	ck_assert_int_eq(0, bit_get(~0x01000000, 7));
+	if (sizeof(bitfield_t) == 4) {
+		ck_assert_int_eq(1, bit_get(0x01000000, 7));
+		ck_assert_int_eq(0, bit_get(~0x01000000, 7));
+	} else {
+		ck_assert_int_eq(1, bit_get(0x0100000000000000, 7));
+		ck_assert_int_eq(0, bit_get(~0x0100000000000000, 7));
+	}
 }
 END_TEST
 
 START_TEST(test_bits_prefix_1)
 {
 	// Different in first bit only
-	ck_assert(!bit_prefix_compare(1 << (BITFIELD_BITS - 1), 0, 1, NULL));
-	ck_assert(!bit_prefix_compare(0, 1 << (BITFIELD_BITS - 1), 1, NULL));
+	ck_assert(!bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 1), 0, 1, NULL));
+	ck_assert(!bit_prefix_compare(0, BITFIELD_ONE << (BITFIELD_BITS - 1), 1, NULL));
 	// Same in top bit (only bit set)
-	ck_assert(bit_prefix_compare(1 << (BITFIELD_BITS - 1), 1 << (BITFIELD_BITS - 1), 1, NULL));
+	ck_assert(bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 1), BITFIELD_ONE << (BITFIELD_BITS - 1),
+				     1, NULL));
 	ck_assert(bit_prefix_compare(0, 0, 1, NULL));
 
 	// So first bit the same, rest different
-	ck_assert(bit_prefix_compare(1 << (BITFIELD_BITS - 1), -1, 1, NULL));
-	ck_assert(bit_prefix_compare(1 << (BITFIELD_BITS - 2), 0, 1, NULL));
+	ck_assert(bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 1), -1, 1, NULL));
+	ck_assert(bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 2), 0, 1, NULL));
 }
 
 END_TEST
