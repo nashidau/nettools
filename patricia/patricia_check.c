@@ -36,14 +36,14 @@ route_add(struct patricia *trie, const char *addr, uint8_t prefix)
 	assert(addr);
 	char buf[100];
 	snprintf(buf, sizeof(buf), "%s/%d", addr, prefix);
-	bool rv = patricia_route_add(trie, inet_network(addr), prefix, strdup(buf));
+	bool rv = patricia_route_add_ip4(trie, inet_network(addr), prefix, strdup(buf));
 	ck_assert(rv);
 }
 
 START_TEST(test_route_add_update_root)
 {
 	struct patricia *trie = patricia_create(AF_INET, strdup("Wrong"));
-	patricia_route_add(trie, inet_network("0.0.0.0"), 0, strdup("Default"));
+	patricia_route_add_ip4(trie, inet_network("0.0.0.0"), 0, strdup("Default"));
 	trie_test(trie, 0);
 }
 END_TEST
@@ -399,8 +399,9 @@ node_test(struct pnode *node, int depth, int *found)
 	ck_assert_int_le(0, node->prefixlen);
 	// We can have empty nodes.
 	if (node->route) {
+		uint32_t addr = node->prefix >> 32;
 		snprintf(buf, sizeof(buf), "%s/%d",
-			 inet_ntoa((struct in_addr){.s_addr = htonl(node->prefix)}),
+			 inet_ntoa((struct in_addr){.s_addr = htonl(addr)}),
 			 depth + node->prefixlen);
 		ck_assert_str_eq(buf, node->route);
 		(*found)++;

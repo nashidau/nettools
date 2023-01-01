@@ -79,14 +79,33 @@ node_free(struct pnode *node)
 	free(node);
 }
 
-static struct patricia *last_trie;
 bool
-patricia_route_add(struct patricia *trie, uint32_t addr, int prefix, const void *route)
+patricia_route_add(struct patricia *trie, bitfield_t addr, int prefix, const void *route)
 {
 	assert(trie);
-	last_trie = trie;
 	assert((prefix == 0) || (addr & mask_create(prefix)) == addr);
 	return route_add(&trie->root, 0, addr, prefix, route);
+}
+
+bool
+patricia_route_add_ip4(struct patricia *trie, in_addr_t addr, int prefix, const void *route)
+{
+	if (PATRICIA_SIZE == 64) {
+		return patricia_route_add(trie, ((bitfield_t)addr) << 32, prefix, route);
+	} else {
+		return patricia_route_add(trie, addr, prefix, route);
+	}
+}
+
+bool
+patricia_route_add_ip6(struct patricia *trie, in6_addr_t addr, int prefix, const void *route)
+{
+	trie = 0;
+	addr = (in6_addr_t){0};
+	prefix = 0;
+	route = NULL;
+	// Not implemented yet.
+	return false;
 }
 
 /**
