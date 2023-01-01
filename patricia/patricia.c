@@ -30,8 +30,7 @@ enum {
 		(a < b) ? a : b;                                                                   \
 	})
 
-
-uint32_t mask_create(int prefix);
+bitfield_t mask_create(int prefix);
 static struct pnode *node_child_set(struct pnode *pnode, bool dir, struct pnode *child);
 static void node_dump(int depth, struct pnode *node);
 static bool route_add(struct pnode *node, int depth, bitfield_t addr, int prefix,
@@ -45,7 +44,6 @@ static struct pnode *insert_child(struct pnode *parent, int parentdepth, bool di
 #else
 #define patricia_clz(x) __builtin_clz(x)
 #endif
-
 
 struct patricia *
 patricia_create(int family, const void *route)
@@ -198,15 +196,15 @@ patricia_dump(struct patricia *trie)
  *
  * Does not work for 0.
  */
-uint32_t
+bitfield_t
 mask_create(int prefix)
 {
-	uint32_t mask;
+	bitfield_t mask;
 	assert(prefix > 0);
 
 	mask = 1ul << prefix;
 	mask -= 1;
-	mask <<= (UINT32_BITS - prefix);
+	mask <<= (BITFIELD_BITS - prefix);
 
 	return mask;
 }
