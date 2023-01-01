@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <check.h>
+#include <netinet/in.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -98,7 +99,7 @@ patricia_route_add_ip4(struct patricia *trie, in_addr_t addr, int prefix, const 
 }
 
 bool
-patricia_route_add_ip6(struct patricia *trie, in6_addr_t addr, int prefix, const void *route)
+patricia_route_add_ip6(struct patricia *trie, struct in6_addr addr, int prefix, const void *route)
 {
 	trie = 0;
 	addr = (in6_addr_t){0};
