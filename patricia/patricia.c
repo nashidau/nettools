@@ -32,6 +32,7 @@ enum {
 		(a < b) ? a : b;                                                                   \
 	})
 
+
 uint32_t mask_create(int prefix);
 static struct pnode *node_child_set(struct pnode *pnode, bool dir, struct pnode *child);
 static void node_dump(int depth, struct pnode *node);
@@ -39,6 +40,14 @@ static bool route_add(struct pnode *node, int depth, bitfield_t addr, int prefix
 		      const void *route);
 static struct pnode *insert_child(struct pnode *parent, int parentdepth, bool dir, int splitdepth,
 				  bitfield_t addr);
+
+// We need to work out which count leading zeros we will use.
+#if PATRICIA_SIZE == 64
+#define patricia_clz(x) __builtin_clzll(x)
+#else
+#define patricia_clz(x) __builtin_clz(x)
+#endif
+
 
 struct patricia *
 patricia_create(int family, const void *route)
@@ -308,7 +317,7 @@ bit_prefix_compare(bitfield_t a, bitfield_t b, uint8_t end, uint8_t *differing)
 	}
 
 	// FIXME: Should bit the right clz based on sizeof(bitfield)
-	uint8_t index = __builtin_clz(result);
+	uint8_t index = patricia_clz(result);
 	if (differing) *differing = index;
 	if (index >= end) {
 		// Difference after end. don't care
