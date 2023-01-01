@@ -17,8 +17,6 @@
 enum {
 	UINT32_BITS = 32,
 };
-// static const bool TRIE_LEFT = false;
-// static const bool TRIE_RIGHT = true;
 
 #define N_CHILDREN 2
 
