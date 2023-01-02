@@ -289,7 +289,7 @@ START_TEST(test_bits_get_last)
 END_TEST
 START_TEST(test_bits_get_seven)
 {
-	if (sizeof(bitfield_t) == 4) {
+	if (PATRICIA_SIZE == 32) {
 		ck_assert_int_eq(1, bit_get(0x01000000, 7));
 		ck_assert_int_eq(0, bit_get(~0x01000000, 7));
 	} else {
