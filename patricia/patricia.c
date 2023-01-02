@@ -50,7 +50,7 @@ patricia_create(int family, const void *route)
 {
 	struct patricia *trie;
 
-	if (family != AF_INET) {
+	if (family != AF_INET && family != AF_INET6) {
 		printf("IPv4 only at the moment peoples\n");
 		return NULL;
 	}
@@ -100,12 +100,14 @@ patricia_route_add_ip4(struct patricia *trie, in_addr_t addr, int prefix, const 
 bool
 patricia_route_add_ip6(struct patricia *trie, struct in6_addr addr, int prefix, const void *route)
 {
-	trie = 0;
-	addr = (struct in6_addr){0};
-	prefix = 0;
-	route = NULL;
-	// Not implemented yet.
-	return false;
+	assert(prefix <= 64);
+	assert(PATRICIA_SIZE == 64);
+	bitfield_t bitfield;
+	memcpy(&bitfield, &addr, sizeof(bitfield_t));
+	return patricia_route_add(trie,
+				  htonl(addr.__u6_addr.__u6_addr32[1]) |
+				      (bitfield_t)htonl(addr.__u6_addr.__u6_addr32[0]) << 32,
+				  prefix, route);
 }
 
 /**

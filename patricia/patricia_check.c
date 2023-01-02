@@ -20,12 +20,14 @@ static Suite *test_module_bits(void *ctx);
 static Suite *test_module_mask(void *ctx);
 static Suite *test_module_child(void *ctx);
 static Suite *test_module_route(void *ctx);
+static Suite *test_module_route6(void *ctx);
 
 static test_module test_modules[] = {
     test_module_bits,
     test_module_mask,
     test_module_child,
     test_module_route,
+    test_module_route6,
 };
 #define N_MODULES ((int)(sizeof(test_modules) / sizeof(test_modules[0])))
 
@@ -36,9 +38,26 @@ route_add(struct patricia *trie, const char *addr, uint8_t prefix)
 {
 	assert(trie);
 	assert(addr);
+	assert(prefix <= 32);
 	char buf[100];
 	snprintf(buf, sizeof(buf), "%s/%d", addr, prefix);
 	bool rv = patricia_route_add_ip4(trie, inet_network(addr), prefix, strdup(buf));
+	ck_assert(rv);
+}
+
+static void
+route_add6(struct patricia *trie, const char *addr, uint8_t prefix) {
+	assert(trie);
+	assert(addr);
+	assert(prefix <= 128);
+	char buf[INET6_ADDRSTRLEN + 6] = "";
+	struct in6_addr in6;
+	assert(inet_pton(AF_INET6, addr, &in6) == 1);
+	// Convert to canonical string
+	inet_ntop(AF_INET6, &in6, buf, sizeof(buf));
+	strncat(buf, "/", 1);
+	printf("Adding %s/%d -> %s to route6 table\n", addr, prefix, buf);
+	bool rv = patricia_route_add_ip6(trie, in6, prefix, strdup(buf));
 	ck_assert(rv);
 }
 
@@ -426,6 +445,14 @@ node_test(struct pnode *node, int depth, int *found)
 	return true;
 }
 
+START_TEST(test_route6_simple) {
+	struct patricia *trie = patricia_create(AF_INET6, "Default");
+	route_add6(trie, "2000:4::", 64);
+	route_add6(trie, "2001:db8::", 32);
+	route_add6(trie, "2001:db8:1234::" ,48);
+     	route_add6(trie, "2001:DB8:46a::", 64);
+} END_TEST
+
 int
 patricia_test()
 {
@@ -443,6 +470,21 @@ patricia_test()
 	srunner_free(sr);
 
 	return nfailed;
+}
+
+static Suite *
+test_module_route6(__attribute__((unused)) void *ctx)
+{
+	Suite *s = suite_create("Route6");
+
+	{
+		TCase *tc_simple = tcase_create("Simple");
+		suite_add_tcase(s, tc_simple);
+
+		tcase_add_test(tc_simple, test_route6_simple);
+	}
+
+	return s;
 }
 
 static Suite *
@@ -487,6 +529,7 @@ test_module_route(__attribute__((unused)) void *ctx)
 		tcase_add_test(tc_add, test_route_add_eight_right_random);
 		tcase_add_test(tc_add, test_route_add_split_node);
 		tcase_add_test(tc_add, test_route_add_split_node_64);
+		// fixme: add some test cases with /32s
 	}
 	{
 		TCase *tc_fork = tcase_create("fork");
