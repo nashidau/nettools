@@ -18,8 +18,14 @@ jobs:
     - name: Ubuntu Dependancies
       if: startsWith(matrix.os, 'ubuntu')
       run: sudo apt-get update && sudo apt-get install -y libtalloc-dev check graphviz
-    - name: make
-      run: make
-    - name: Run tests
+    - name: make (64 bit)
+      run: make PATRICIA_SIZE=64
+    - name: Run tests (64 bit)
+      run: ./main
+    - name: clean
+      run: make clean
+    - name: make (32 bit)
+      run: make PATRICIA_SIZE=32
+    - name: Run tests (32 bit)
       run: ./main
 
