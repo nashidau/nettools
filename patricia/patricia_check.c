@@ -305,8 +305,8 @@ START_TEST(test_bits_prefix_1)
 	ck_assert(!bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 1), 0, 1, NULL));
 	ck_assert(!bit_prefix_compare(0, BITFIELD_ONE << (BITFIELD_BITS - 1), 1, NULL));
 	// Same in top bit (only bit set)
-	ck_assert(bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 1), BITFIELD_ONE << (BITFIELD_BITS - 1),
-				     1, NULL));
+	ck_assert(bit_prefix_compare(BITFIELD_ONE << (BITFIELD_BITS - 1),
+				     BITFIELD_ONE << (BITFIELD_BITS - 1), 1, NULL));
 	ck_assert(bit_prefix_compare(0, 0, 1, NULL));
 
 	// So first bit the same, rest different
@@ -399,7 +399,11 @@ node_test(struct pnode *node, int depth, int *found)
 	ck_assert_int_le(0, node->prefixlen);
 	// We can have empty nodes.
 	if (node->route) {
-		uint32_t addr = node->prefix >> 32;
+		uint32_t addr;
+		if (PATRICIA_SIZE == 64)
+			addr = node->prefix >> 32;
+		else
+			addr = node->prefix;
 		snprintf(buf, sizeof(buf), "%s/%d",
 			 inet_ntoa((struct in_addr){.s_addr = htonl(addr)}),
 			 depth + node->prefixlen);

@@ -4,7 +4,7 @@
 
 // 32 bit or 64bit bitfields
 #ifndef PATRICIA_SIZE
-#define PATRICIA_SIZE 32
+#define PATRICIA_SIZE 64
 #endif
 
 #if PATRICIA_SIZE == 64
