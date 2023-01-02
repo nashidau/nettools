@@ -17,11 +17,13 @@ static bool trie_test(struct patricia *trie, int expected);
 static bool node_test(struct pnode *node, int depth, int *found);
 
 static Suite *test_module_bits(void *ctx);
+static Suite *test_module_mask(void *ctx);
 static Suite *test_module_child(void *ctx);
 static Suite *test_module_route(void *ctx);
 
 static test_module test_modules[] = {
     test_module_bits,
+    test_module_mask,
     test_module_child,
     test_module_route,
 };
@@ -507,3 +509,41 @@ test_module_route(__attribute__((unused)) void *ctx)
 
 	return s;
 }
+
+START_TEST(test_mask_0) {
+	ck_assert_int_eq(0, mask_create(0));
+} END_TEST 
+
+START_TEST(test_mask_1) {
+	if (PATRICIA_SIZE == 32)
+		ck_assert_int_eq(0x80000000, mask_create(1));
+	else
+		ck_assert_int_eq(0x8000000000000000, mask_create(1));
+} END_TEST
+
+START_TEST(test_mask_32) {
+	ck_assert_int_eq(0xffffffff, mask_create(32));
+} END_TEST
+
+START_TEST(test_mask_64) {
+	if (PATRICIA_SIZE == 64)
+		ck_assert_int_eq(0xffffffffffffffff, mask_create(64));
+} END_TEST
+
+static Suite *
+test_module_mask(__attribute__((unused)) void *ctx) {
+	Suite *s = suite_create("Mask");
+
+	{
+		TCase *tc_mask = tcase_create("basic");
+		suite_add_tcase(s, tc_mask);
+
+		tcase_add_test(tc_mask, test_mask_0);
+		tcase_add_test(tc_mask, test_mask_1);
+		tcase_add_test(tc_mask, test_mask_32);
+		tcase_add_test(tc_mask, test_mask_64);
+	}
+
+	return s;
+}
+

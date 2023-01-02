@@ -31,7 +31,6 @@ enum {
 		(a < b) ? a : b;                                                                   \
 	})
 
-bitfield_t mask_create(int prefix);
 static struct pnode *node_child_set(struct pnode *pnode, bool dir, struct pnode *child);
 static void node_dump(int depth, struct pnode *node);
 static bool route_add(struct pnode *node, int depth, bitfield_t addr, int prefix,
@@ -217,12 +216,14 @@ patricia_dump(struct patricia *trie)
  * Does not work for 0.
  */
 bitfield_t
-mask_create(int prefix)
+mask_create(uint8_t prefix)
 {
 	bitfield_t mask;
-	assert(prefix > 0);
+	if (prefix >= BITFIELD_BITS) {
+		return -1;
+	}
 
-	mask = 1ul << prefix;
+	mask = BITFIELD_ONE << prefix;
 	mask -= 1;
 	mask <<= (BITFIELD_BITS - prefix);
 

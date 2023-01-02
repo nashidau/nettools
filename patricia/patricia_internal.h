@@ -48,3 +48,4 @@ struct pnode *child_alloc(uint8_t depth, bitfield_t addr, uint8_t prefixlen);
 void node_free(struct pnode *pnode);
 bool bit_get(bitfield_t bitfield, uint8_t index);
 bool bit_prefix_compare(bitfield_t a, bitfield_t b, uint8_t end, uint8_t *differing);
+bitfield_t mask_create(uint8_t prefix);
