@@ -25,7 +25,7 @@ typedef uint32_t bitfield_t;
 // The defines for IPv6 headers are all over the place
 #ifndef s6_addr32
 # ifdef __linux__
-#  define s6_addr32 in6_u.u6_addr32
+#  define s6_addr32 __in6_u.u6_addr32
 # elif defined __APPLE__
 #  define s6_addr32 __u6_addr.__u6_addr32
 # endif
