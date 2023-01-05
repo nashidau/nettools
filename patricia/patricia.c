@@ -45,6 +45,7 @@ static struct pnode *insert_child(struct pnode *parent, int parentdepth, bool di
 #define patricia_clz(x) __builtin_clz(x)
 #endif
 
+
 struct patricia *
 patricia_create(int family, const void *route)
 {
@@ -105,8 +106,8 @@ patricia_route_add_ip6(struct patricia *trie, struct in6_addr addr, int prefix, 
 	bitfield_t bitfield;
 	memcpy(&bitfield, &addr, sizeof(bitfield_t));
 	return patricia_route_add(trie,
-				  htonl(addr.__u6_addr.__u6_addr32[1]) |
-				      (bitfield_t)htonl(addr.__u6_addr.__u6_addr32[0]) << 32,
+				  htonl(addr.s6_addr32[1]) |
+				      (bitfield_t)htonl(addr.s6_addr32[0]) << 32,
 				  prefix, route);
 }
 
