@@ -11,21 +11,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-12]
+        patricia-size: [32, 64]
     runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v3
     - name: Ubuntu Dependancies
       if: startsWith(matrix.os, 'ubuntu')
       run: sudo apt-get update && sudo apt-get install -y libtalloc-dev check graphviz
-    - name: make (64 bit)
-      run: make PATRICIA_SIZE=64
-    - name: Run tests (64 bit)
-      run: ./main
-    - name: clean
-      run: make clean
-    - name: make (32 bit)
-      run: make PATRICIA_SIZE=32
-    - name: Run tests (32 bit)
+    - name: Macos Dependancies
+      if: startsWith(matrix.os, 'macos')
+      run: brew install check
+    - name: make (${{matrix.patricia-size}} bit)
+      run: make PATRICIA_SIZE=${{matrix.patricia-size}}
+    - name: Run tests
       run: ./main
 
