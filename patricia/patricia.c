@@ -33,8 +33,8 @@ enum {
 
 static struct pnode *node_child_set(struct pnode *pnode, bool dir, struct pnode *child);
 static void node_dump(int depth, struct pnode *node);
-static bool route_add(struct pnode *node, int depth, bitfield_t addr, int prefix,
-		      const void *route);
+static struct pnode *route_add(struct pnode *node, int depth, bitfield_t addr, int prefix,
+			       const void *route);
 static struct pnode *insert_child(struct pnode *parent, int parentdepth, bool dir, int splitdepth,
 				  bitfield_t addr);
 
@@ -130,16 +130,16 @@ patricia_route_add_ip6(struct patricia *trie, struct in6_addr addr, int prefix, 
  * @param addr The address we are adding
  * @param prefix the Prefix of the address we are adding (target depth)
  * @param route The data to set when we reach the bottom
- * @return true if addedd succesfully, false otherwise.
+ * @return The newly added or the route to update.
  */
-static bool
+static struct pnode *
 route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void *route)
 {
 	assert(node);
 
 	if (depth == prefix) {
 		node->route = route;
-		return true;
+		return node;
 	}
 
 	// Lets see which child we need:
@@ -152,7 +152,7 @@ route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void
 		child->route = route;
 		assert(child->prefixlen == prefix - depth - 1);
 		node_child_set(node, dir, child);
-		return true;
+		return child;
 	}
 
 	if (child->prefixlen == 0) {
@@ -175,7 +175,7 @@ route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void
 		// So insert directly in the current trie.
 		struct pnode *split = insert_child(node, depth, dir, prefix, addr);
 		split->route = route;
-		return true;
+		return split;
 	}
 
 	// Insert node, then call again to update the new node.
