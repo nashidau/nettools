@@ -565,7 +565,11 @@ START_TEST(test_mask_1) {
 } END_TEST
 
 START_TEST(test_mask_32) {
+#if PATRICIA_SIZE == 32
 	ck_assert_int_eq(0xffffffff, mask_create(32));
+#else
+	ck_assert_int_eq((bitfield_t)0xffffffff00000000ull, mask_create(32));
+#endif
 } END_TEST
 
 START_TEST(test_mask_64) {
