@@ -33,8 +33,7 @@ enum {
 
 static struct pnode *node_child_set(struct pnode *pnode, bool dir, struct pnode *child);
 static void node_dump(int depth, struct pnode *node);
-static struct pnode *route_add(struct pnode *node, int depth, bitfield_t addr, int prefix,
-			       const void *route);
+static struct pnode *route_add(struct pnode *node, int depth, bitfield_t addr, int prefix);
 static struct pnode *insert_child(struct pnode *parent, int parentdepth, bool dir, int splitdepth,
 				  bitfield_t addr);
 
@@ -85,7 +84,10 @@ patricia_route_add(struct patricia *trie, bitfield_t addr, int prefix, const voi
 {
 	assert(trie);
 	assert((prefix == 0) || (addr & mask_create(prefix)) == addr);
-	return route_add(&trie->root, 0, addr, prefix, route);
+	struct pnode *pnode = route_add(&trie->root, 0, addr, prefix);
+	assert(pnode);
+	pnode->route = route;
+	return true;
 }
 
 bool
@@ -134,12 +136,11 @@ patricia_route_add_ip6(struct patricia *trie, struct in6_addr addr, int prefix, 
  * @return The newly added or the route to update.
  */
 static struct pnode *
-route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void *route)
+route_add(struct pnode *node, int depth, bitfield_t addr, int prefix)
 {
 	assert(node);
 
 	if (depth == prefix) {
-		node->route = route;
 		return node;
 	}
 
@@ -150,7 +151,6 @@ route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void
 	if (child == NULL) {
 		// No child in that direction - just add.
 		child = child_alloc(depth, addr, prefix);
-		child->route = route;
 		assert(child->prefixlen == prefix - depth - 1);
 		node_child_set(node, dir, child);
 		return child;
@@ -158,7 +158,7 @@ route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void
 
 	if (child->prefixlen == 0) {
 		// Child exists, and it matches - recurse into it.
-		return route_add(child, depth + 1, addr, prefix, route);
+		return route_add(child, depth + 1, addr, prefix);
 	}
 
 	// Compare prefixes, see if child matches
@@ -168,14 +168,13 @@ route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void
 
 	if (matched && prefix > depth + child->prefixlen) {
 		// No prefix, fully populated here, recurse down.
-		return route_add(child, depth + 1 + child->prefixlen, addr, prefix, route);
+		return route_add(child, depth + 1 + child->prefixlen, addr, prefix);
 	}
 
 	// Do we need to split due to length or because they differ.
 	if (matched) {
 		// So insert directly in the current trie.
 		struct pnode *split = insert_child(node, depth, dir, prefix, addr);
-		split->route = route;
 		return split;
 	}
 
@@ -183,7 +182,7 @@ route_add(struct pnode *node, int depth, bitfield_t addr, int prefix, const void
 	struct pnode *split = insert_child(node, depth, dir, diffoffset, addr);
 	split->route = NULL;
 
-	return route_add(split, diffoffset, addr, prefix, route);
+	return route_add(split, diffoffset, addr, prefix);
 }
 
 static struct pnode *
